@@ -737,9 +737,6 @@
 
     btn.addEventListener("click", function () {
       wanted = true;
-      /* the "Click me" nudge has done its job — retire it for the visit, so it
-         does not come back the next time the song is paused */
-      btn.classList.add("is-dismissed");
       /* mid-silent-open: the song is running but inaudible, so the first press
          has to bring the sound in rather than read as "pause" */
       if (audio.muted) { unmute(); return; }

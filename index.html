@@ -186,6 +186,13 @@
       <svg class="i-pause" viewBox="0 0 24 24"><path d="M7.5 5h3.2v14H7.5V5Zm5.8 0h3.2v14h-3.2V5Z"/></svg>
     </span>
     <span class="music-toggle__bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+    <!-- Nudge toward the button. Lives inside it so a press anywhere on the
+         pill counts, and so it tracks the pill's width on small screens. The
+         button's aria-label already says what this does, so it stays silent. -->
+    <span class="music-hint" aria-hidden="true">
+      <svg class="music-hint__arrow" viewBox="0 0 24 24"><path d="M15 5 8 12l7 7"/></svg>
+      Click me
+    </span>
   </button>
 
   <nav class="dots" id="dots" aria-label="Page navigation"></nav>

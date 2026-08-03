@@ -425,8 +425,6 @@ body[data-page="3"] .bg__photo--final.is-ready{opacity:1}
   font-family:var(--font-body);font-size:.66rem;font-weight:500;
   letter-spacing:.12em;text-transform:uppercase;
   color:var(--ink-soft);white-space:nowrap;
-  opacity:0;visibility:hidden;pointer-events:none;
-  transition:opacity .45s var(--ease-out),visibility .45s;
 }
 .music-hint__arrow{
   width:14px;height:14px;flex:none;
@@ -435,13 +433,6 @@ body[data-page="3"] .bg__photo--final.is-ready{opacity:1}
   animation:hintNudge 1.6s var(--ease-soft) infinite;
 }
 @keyframes hintNudge{0%,100%{transform:translateX(0)}50%{transform:translateX(-4px)}}
-
-/* Only worth showing while the song is not already playing. Once the button
-   has been pressed, `is-dismissed` retires the nudge for the whole visit —
-   without it, pausing the music later would bring the nudge back. */
-.music-toggle:not(.is-dismissed)[aria-pressed="false"] .music-hint{
-  opacity:1;visibility:visible;pointer-events:auto;
-}
 
 .dots{
   position:fixed;top:50%;right:clamp(10px,2vw,22px);z-index:80;
@@ -1702,7 +1693,7 @@ body.is-loading .page.is-active{opacity:0}
   .card__badge{top:10px;right:10px;padding:5px 10px 5px 8px;font-size:.6rem}
   .music-toggle{padding:9px 13px 9px 9px}
   .music-toggle__bars{display:none}
-  .music-hint{left:calc(100% + 3px);padding:0px 5px;font-size:.5rem;letter-spacing:.1em}
+  .music-hint{left:calc(100% + 3px);padding:0px 6px;letter-spacing:.1em}
   .music-hint__arrow{width:12px;height:12px}
   .lightbox__nav{width:44px;height:44px;margin-top:-22px}
   .lightbox__media img,.lightbox__media video{max-height:66vh}
@@ -1711,7 +1702,7 @@ body.is-loading .page.is-active{opacity:0}
   .polaroids{grid-template-columns:repeat(2,1fr);gap:14px}
   .polaroid{padding:9px 9px 38px}
   .polaroid__cap{bottom:11px;font-size:1rem}
-  .btn{padding:14px 26px;font-size:.94rem}
+  .btn{padding:14px 26px;font-size:.100rem}
 }
 
 @media (max-width:400px){
