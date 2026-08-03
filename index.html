@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#e8ddcb" />
+<title>A Birthday Surprise ✨</title>
+<meta name="description" content="A little something made with love, just for you." />
+
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎂</text></svg>" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Great+Vibes&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500&family=Poppins:wght@200;300;400;500;600&display=swap" rel="stylesheet" />
+
+<link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="is-loading">
+
+  <!-- ══════════ Ambient background layers ══════════ -->
+  <div class="bg" aria-hidden="true">
+    <div class="bg__gradient"></div>
+    <div class="bg__blob bg__blob--1"></div>
+    <div class="bg__blob bg__blob--2"></div>
+    <div class="bg__blob bg__blob--3"></div>
+    <div class="bg__blob bg__blob--4"></div>
+    <!-- cedar/sage wash, faded in on pages 2 and 3 -->
+    <div class="bg__earth">
+      <div class="bg__blob bg__blob--e1"></div>
+      <div class="bg__blob bg__blob--e2"></div>
+      <div class="bg__blob bg__blob--e3"></div>
+    </div>
+    <!-- page-2 wallpaper. Dormant until `galleryBackground` in js/media.js
+         points at a file that actually loads. -->
+    <div class="bg__photo bg__photo--gallery" id="bgPhoto">
+      <div class="bg__photo-img" id="bgPhotoImg"></div>
+      <div class="bg__photo-tint"></div>
+      <div class="bg__photo-scrim"></div>
+    </div>
+    <!-- page-3 wallpaper, same machinery on its own layer so the two pages can
+         carry different pictures and cross-fade between them. Driven by
+         `finalBackground` in js/media.js. -->
+    <div class="bg__photo bg__photo--final" id="bgPhotoFinal">
+      <div class="bg__photo-img" id="bgPhotoFinalImg"></div>
+      <div class="bg__photo-tint"></div>
+      <div class="bg__photo-scrim"></div>
+    </div>
+    <div class="bg__grain"></div>
+  </div>
+
+  <!-- ══════════ Floral artwork (drawn once, re-used everywhere) ══════════ -->
+  <svg class="svg-defs" width="0" height="0" aria-hidden="true" focusable="false">
+    <defs>
+      <!-- Cedar bark / sage / wheat. The ids keep their original names so every
+           `use` reference across the page still resolves. -->
+      <radialGradient id="gRosePink" cx="40%" cy="34%" r="72%">
+        <stop offset="0%"   stop-color="#fbf3ea"/>
+        <stop offset="38%"  stop-color="#e2c9b2"/>
+        <stop offset="100%" stop-color="#97735c"/>
+      </radialGradient>
+      <radialGradient id="gRoseLilac" cx="40%" cy="34%" r="72%">
+        <stop offset="0%"   stop-color="#f6f9f1"/>
+        <stop offset="38%"  stop-color="#cddabf"/>
+        <stop offset="100%" stop-color="#728468"/>
+      </radialGradient>
+      <radialGradient id="gRoseCream" cx="40%" cy="34%" r="72%">
+        <stop offset="0%"   stop-color="#fffdf6"/>
+        <stop offset="42%"  stop-color="#f2e3c8"/>
+        <stop offset="100%" stop-color="#c9a874"/>
+      </radialGradient>
+      <linearGradient id="gPetalPink" x1="20%" y1="0%" x2="80%" y2="100%">
+        <stop offset="0%"   stop-color="#faf2e9"/>
+        <stop offset="45%"  stop-color="#dfc4ab"/>
+        <stop offset="100%" stop-color="#a37c62"/>
+      </linearGradient>
+      <linearGradient id="gPetalLilac" x1="20%" y1="0%" x2="80%" y2="100%">
+        <stop offset="0%"   stop-color="#f5f9f0"/>
+        <stop offset="45%"  stop-color="#c8d7ba"/>
+        <stop offset="100%" stop-color="#7d9070"/>
+      </linearGradient>
+      <linearGradient id="gPetalCream" x1="20%" y1="0%" x2="80%" y2="100%">
+        <stop offset="0%"   stop-color="#fffdf7"/>
+        <stop offset="50%"  stop-color="#f4e6cd"/>
+        <stop offset="100%" stop-color="#d8b47f"/>
+      </linearGradient>
+
+      <!-- A rose seen from above: three rings of petals closing on a swirl.
+           Outer petals are scaled wide and shallow so the bloom opens out
+           instead of bunching into a ball. -->
+      <g id="art-rose">
+        <g fill-opacity=".72">
+          <path d="M0 0C-25-9-35-30-21-45-12-55 12-55 21-45 35-30 25-9 0 0Z" transform="rotate(0)   scale(1.16,.9)"/>
+          <path d="M0 0C-25-9-35-30-21-45-12-55 12-55 21-45 35-30 25-9 0 0Z" transform="rotate(60)  scale(1.16,.9)"/>
+          <path d="M0 0C-25-9-35-30-21-45-12-55 12-55 21-45 35-30 25-9 0 0Z" transform="rotate(120) scale(1.16,.9)"/>
+          <path d="M0 0C-25-9-35-30-21-45-12-55 12-55 21-45 35-30 25-9 0 0Z" transform="rotate(180) scale(1.16,.9)"/>
+          <path d="M0 0C-25-9-35-30-21-45-12-55 12-55 21-45 35-30 25-9 0 0Z" transform="rotate(240) scale(1.16,.9)"/>
+          <path d="M0 0C-25-9-35-30-21-45-12-55 12-55 21-45 35-30 25-9 0 0Z" transform="rotate(300) scale(1.16,.9)"/>
+        </g>
+        <g fill-opacity=".86">
+          <path d="M0 0C-25-9-35-30-21-45-12-55 12-55 21-45 35-30 25-9 0 0Z" transform="rotate(36)  scale(.84,.7)"/>
+          <path d="M0 0C-25-9-35-30-21-45-12-55 12-55 21-45 35-30 25-9 0 0Z" transform="rotate(108) scale(.84,.7)"/>
+          <path d="M0 0C-25-9-35-30-21-45-12-55 12-55 21-45 35-30 25-9 0 0Z" transform="rotate(180) scale(.84,.7)"/>
+          <path d="M0 0C-25-9-35-30-21-45-12-55 12-55 21-45 35-30 25-9 0 0Z" transform="rotate(252) scale(.84,.7)"/>
+          <path d="M0 0C-25-9-35-30-21-45-12-55 12-55 21-45 35-30 25-9 0 0Z" transform="rotate(324) scale(.84,.7)"/>
+        </g>
+        <g fill-opacity=".95">
+          <path d="M0 0C-25-9-35-30-21-45-12-55 12-55 21-45 35-30 25-9 0 0Z" transform="rotate(18)  scale(.5,.44)"/>
+          <path d="M0 0C-25-9-35-30-21-45-12-55 12-55 21-45 35-30 25-9 0 0Z" transform="rotate(108) scale(.5,.44)"/>
+          <path d="M0 0C-25-9-35-30-21-45-12-55 12-55 21-45 35-30 25-9 0 0Z" transform="rotate(198) scale(.5,.44)"/>
+          <path d="M0 0C-25-9-35-30-21-45-12-55 12-55 21-45 35-30 25-9 0 0Z" transform="rotate(288) scale(.5,.44)"/>
+        </g>
+        <path d="M-2-8C5-14-5-19-10-12-15-4-3 5 9-2" fill="none" stroke="#fff"
+              stroke-opacity=".45" stroke-width="2.4" stroke-linecap="round"/>
+      </g>
+
+      <!-- A single loose petal -->
+      <g id="art-petal">
+        <path d="M0-46C21-33 27-9 13 13 7 23-7 23-13 13-27-9-21-33 0-46Z"/>
+        <path d="M0-40C8-20 8 0 0 16" fill="none" stroke="#fff" stroke-opacity=".32" stroke-width="1.7"/>
+      </g>
+
+      <linearGradient id="gGold" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%"   stop-color="#f7e3b0"/>
+        <stop offset="50%"  stop-color="#dfb96f"/>
+        <stop offset="100%" stop-color="#c99f4f"/>
+      </linearGradient>
+      <!-- accent-B ribbon: sage (id kept so the curls and hearts still resolve) -->
+      <linearGradient id="gRibbonPink" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%"   stop-color="#d6dfcb"/>
+        <stop offset="50%"  stop-color="#8a9c7c"/>
+        <stop offset="100%" stop-color="#5e7055"/>
+      </linearGradient>
+
+      <!-- cedar / sage / wheat, for the heart particles on page 3 -->
+      <linearGradient id="gCedar" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%"   stop-color="#c0a38e"/>
+        <stop offset="50%"  stop-color="#97735c"/>
+        <stop offset="100%" stop-color="#63483a"/>
+      </linearGradient>
+      <linearGradient id="gSage" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%"   stop-color="#bfccb2"/>
+        <stop offset="50%"  stop-color="#8a9c7c"/>
+        <stop offset="100%" stop-color="#5e7055"/>
+      </linearGradient>
+      <linearGradient id="gWheat" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%"   stop-color="#f0e0c2"/>
+        <stop offset="50%"  stop-color="#d9b98a"/>
+        <stop offset="100%" stop-color="#b3925f"/>
+      </linearGradient>
+
+      <!-- Heart particle (SVG, not an emoji: bare ♥ renders as a black glyph
+           in text presentation on some platforms) -->
+      <g id="art-heart">
+        <path d="M0 24C-6 16-24 4-24-8-24-18-14-24-6-20-2-18 0-14 0-12 0-14 2-18 6-20 14-24 24-18 24-8 24 4 6 16 0 24Z"/>
+      </g>
+
+      <!-- A loose ribbon curl -->
+      <g id="art-curl">
+        <path d="M-30-34C-6-30 6-14 2 4-1 18-16 24-24 16-31 9-27-3-17-4-8-5-3 3-6 10"
+              fill="none" stroke-width="5" stroke-linecap="round"/>
+      </g>
+
+      <!-- Baby's-breath sprig -->
+      <g id="art-sprig" fill="#fffaf4">
+        <circle cx="0"   cy="0"   r="4.4"/>
+        <circle cx="-13" cy="-9"  r="3.4" opacity=".9"/>
+        <circle cx="12"  cy="-11" r="3.8" opacity=".92"/>
+        <circle cx="-9"  cy="12"  r="3"   opacity=".8"/>
+        <circle cx="14"  cy="9"   r="3.2" opacity=".85"/>
+        <circle cx="1"   cy="-19" r="2.6" opacity=".75"/>
+      </g>
+    </defs>
+  </svg>
+
+  <canvas id="confetti-canvas" class="confetti-canvas" aria-hidden="true"></canvas>
+  <div class="sparkle-field" id="sparkleField" aria-hidden="true"></div>
+
+  <!-- Sweeping veil used for page-to-page transitions -->
+  <div class="veil" id="veil" aria-hidden="true"><span></span></div>
+
+  <!-- ══════════ Fixed chrome ══════════ -->
+  <button class="music-toggle" id="musicToggle" type="button" hidden
+          aria-pressed="false" aria-label="Play background music" title="Play background music">
+    <span class="music-toggle__icon" aria-hidden="true">
+      <svg class="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5-11-6.5Z"/></svg>
+      <svg class="i-pause" viewBox="0 0 24 24"><path d="M7.5 5h3.2v14H7.5V5Zm5.8 0h3.2v14h-3.2V5Z"/></svg>
+    </span>
+    <span class="music-toggle__bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+  </button>
+
+  <nav class="dots" id="dots" aria-label="Page navigation"></nav>
+
+  <!-- ══════════ PAGE 1 — Welcome & Birthday Surprise ══════════ -->
+  <main class="stage" id="stage">
+
+    <section class="page page--welcome is-active" id="page-1" data-page="1" aria-label="Birthday welcome">
+      <!-- Celebration scene. Everything here is weighted to the right so the
+           left stays calm enough to carry the headline. -->
+      <!-- Full-bleed photo hero. Stays dormant until `heroBackground` in
+           js/media.js points at a file that actually loads. -->
+      <div class="hero-photo" id="heroPhoto" aria-hidden="true">
+        <div class="hero-photo__img" id="heroPhotoImg"></div>
+        <div class="hero-photo__tint"></div>
+        <div class="hero-photo__scrim"></div>
+        <div class="hero-photo__vignette"></div>
+      </div>
+
+      <div class="hero-glow" aria-hidden="true"></div>
+      <div class="bokeh" id="bokeh" aria-hidden="true"></div>
+      <div class="fairy" id="fairy" aria-hidden="true"></div>
+      <div class="curls" id="curls" aria-hidden="true"></div>
+      <div class="garden" id="garden" aria-hidden="true"></div>
+      <div class="petals petals--back" id="petalsBack" aria-hidden="true"></div>
+      <div class="balloons" id="balloons" aria-hidden="true"></div>
+      <div class="hearts hearts--hero" id="heroHearts" aria-hidden="true"></div>
+
+      <div class="page__inner welcome">
+       <div class="welcome__copy">
+        <span class="welcome__mark reveal" data-delay="120" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M12 20.6C12 20.6 3.9 15.7 3.9 10.3A4.4 4.4 0 0 1 12 7.7a4.4 4.4 0 0 1 8.1 2.6c0 5.4-8.1 10.3-8.1 10.3Z"/></svg>
+        </span>
+        <p class="welcome__eyebrow reveal" data-delay="200">
+          <span class="line"></span> A little surprise, made just for you <span class="line"></span>
+        </p>
+
+        <h1 class="hb" aria-label="Happy Birthday">
+          <span class="hb__row hb__row--script" id="hbScript" aria-hidden="true"></span>
+          <span class="hb__row hb__row--display" id="hbDisplay" aria-hidden="true"></span>
+        </h1>
+
+        <p class="welcome__name reveal" data-delay="1500" id="welcomeName"></p>
+
+        <div class="wishes" id="wishes" aria-live="polite">
+          <p class="wishes__text is-active"></p>
+          <p class="wishes__text"></p>
+        </div>
+
+        <div class="wishes__pips" id="wishPips" aria-hidden="true"></div>
+
+        <div class="welcome__foot">
+          <button class="btn btn--primary reveal" data-delay="2000" type="button" data-goto="2">
+            <span class="btn__label">Next</span>
+            <span class="btn__arrow" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M5 12h13m0 0-5.5-5.5M18 12l-5.5 5.5"/></svg>
+            </span>
+            <span class="btn__shine" aria-hidden="true"></span>
+          </button>
+          <p class="welcome__hint reveal" data-delay="2200">Our memories are waiting on the next page</p>
+        </div>
+       </div>
+
+       <!-- Character art. Stays empty (and the layout stays centred) until
+            `heroCharacter` is set in js/media.js. -->
+       <figure class="hero-art" id="heroArt" hidden>
+         <span class="hero-art__halo" aria-hidden="true"></span>
+         <img id="heroArtImg" alt="" decoding="async" />
+       </figure>
+      </div>
+
+      <!-- a few large, soft petals drifting in front of everything, for depth -->
+      <div class="petals petals--front" id="petalsFront" aria-hidden="true"></div>
+    </section>
+
+    <!-- ══════════ PAGE 2 — Memory Gallery ══════════ -->
+    <section class="page page--gallery" id="page-2" data-page="2" aria-label="Memory gallery" aria-hidden="true">
+      <div class="page__inner gallery-wrap">
+        <header class="section-head">
+          <p class="section-head__eyebrow">Chapter Two</p>
+          <h2 class="section-head__title">Your Little Museum <span>of Memories</span></h2>
+          <p class="section-head__sub">Every photo here is a moment you'd live again. Tap any one to open it.</p>
+        </header>
+
+        <div class="gallery" id="gallery"></div>
+
+        <div class="gallery__foot">
+          <button class="btn btn--primary" type="button" data-goto="3">
+            <span class="btn__label">Next</span>
+            <span class="btn__arrow" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M5 12h13m0 0-5.5-5.5M18 12l-5.5 5.5"/></svg>
+            </span>
+            <span class="btn__shine" aria-hidden="true"></span>
+          </button>
+          <p class="gallery__hint">One last surprise is waiting…</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ PAGE 3 — Final Surprise ══════════ -->
+    <section class="page page--final" id="page-3" data-page="3" aria-label="The final surprise" aria-hidden="true">
+      <div class="hearts" id="hearts" aria-hidden="true"></div>
+
+      <div class="page__inner final" id="final">
+
+        <div class="final__stage" id="videoStage">
+          <p class="final__cue" id="videoCue">Press play — this one is just for you 💌</p>
+          <div class="video-frame" id="videoFrame">
+            <div class="video-frame__inner">
+              <video id="finalVideo" playsinline preload="metadata" controls controlsList="nodownload noplaybackrate"></video>
+            </div>
+            <div class="video-frame__glow" aria-hidden="true"></div>
+          </div>
+          <button class="link-btn" id="skipVideo" type="button" hidden>Open The Letter →</button>
+        </div>
+
+        <div class="final__reveal" id="finalReveal" hidden>
+          <article class="letter" id="letter">
+            <div class="letter__corner letter__corner--tl" aria-hidden="true"></div>
+            <div class="letter__corner letter__corner--br" aria-hidden="true"></div>
+            <p class="letter__eyebrow fade-up">With all my heart</p>
+            <h2 class="letter__title fade-up" id="letterTitle"></h2>
+            <div class="letter__body" id="letterBody"></div>
+            <p class="letter__sign fade-up" id="letterSign"></p>
+          </article>
+
+          <div class="polaroids" id="polaroids"></div>
+
+          <footer class="final__foot fade-up">
+            <p class="final__wish" id="finalWish"></p>
+            <button class="btn btn--ghost" type="button" id="celebrateBtn">
+              <span class="btn__label">Celebrate again 🎉</span>
+            </button>
+            <p class="final__credit">Made with love, and a lot of clicking. 💖</p>
+          </footer>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ══════════ Lightbox ══════════ -->
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Media preview" hidden>
+    <div class="lightbox__backdrop" data-close></div>
+    <button class="lightbox__close" id="lbClose" type="button" aria-label="Close preview">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+    </button>
+    <button class="lightbox__nav lightbox__nav--prev" id="lbPrev" type="button" aria-label="Previous">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+    </button>
+    <button class="lightbox__nav lightbox__nav--next" id="lbNext" type="button" aria-label="Next">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+    </button>
+    <figure class="lightbox__figure" id="lbFigure">
+      <div class="lightbox__media" id="lbMedia"></div>
+      <figcaption class="lightbox__caption" id="lbCaption"></figcaption>
+    </figure>
+  </div>
+
+  <audio id="bgMusic" loop preload="none"></audio>
+
+  <script src="js/media.js" charset="utf-8"></script>
+  <script src="js/main.js" charset="utf-8"></script>
+</body>
+</html>

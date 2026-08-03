@@ -1,0 +1,40 @@
+# Note: assets/ is deliberately NOT ignored. The photos, videos and music are
+# the point of this site — they belong in the repo, not in a local-only folder.
+
+# ── OS junk ──────────────────────────────────────────────────────────
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+._*
+
+# ── Editors ──────────────────────────────────────────────────────────
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+
+# ── Claude Code ──────────────────────────────────────────────────────
+# .claude/settings.json is shared on purpose; the local override is not.
+.claude/settings.local.json
+
+# ── Tooling, if this ever grows a build step ─────────────────────────
+node_modules/
+dist/
+.cache/
+*.log
+npm-debug.log*
+yarn-error.log*
+.env
+.env.local
+
+# ── Scratch ──────────────────────────────────────────────────────────
+*.tmp
+*.bak
+*.orig
+*.rej
