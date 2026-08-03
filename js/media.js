@@ -124,7 +124,9 @@ window.BIRTHDAY_CONFIG = {
 
     /* left · THE VIDEO · right */
     { type: "photo", src: "assets/photos/thanu10.jpg", caption: "Even your quiet is pretty",    date: "That evening" },
-    { type: "video", src: "assets/videos/thanmayee2.mp4", caption: "You, being completely you", date: "Play me" },
+    // Hosted on Cloudinary rather than in assets/videos/ — the file is too big
+    // to keep in the repo.
+    { type: "video", src: "https://res.cloudinary.com/zkrswrjt/video/upload/v1785738440/thanmayee2_mhzt63.mp4", caption: "You, being completely you", date: "Play me" },
     { type: "photo", src: "assets/photos/thanu2.jpg", caption: "Somewhere between two cities", date: "The train" },
 
     /* below */
@@ -153,8 +155,11 @@ window.BIRTHDAY_CONFIG = {
   finalBackgroundPosition: "50% 42%",
 
   // The one special video. The letter stays hidden until it finishes.
+  // Served from Cloudinary, same as the gallery video above. The local copy in
+  // assets/videos/ is still there as the <source> fallback in index.html, but
+  // this line is what actually plays.
   finalVideo: {
-    src: "assets/videos/thanmayee1.mp4",
+    src: "https://res.cloudinary.com/zkrswrjt/video/upload/v1785738355/thanmayee1_hkqlw1.mp4",
     poster: "assets/photos/thanu.jpg"
   },
 
