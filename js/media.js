@@ -15,10 +15,10 @@ window.BIRTHDAY_CONFIG = {
   /* ── Page 1 — Welcome ───────────────────────────────────────────────── */
 
   // The name shown under the big "Happy Birthday" heading.
-  name: "Thanmayee...❣️❣️",
+  name: "Thanmayeeeeeeeeeeeeeeeeee...❣️❣️",
 
   // Small line above the name.
-  nameIntro: "To",
+  nameIntro: "To Youu",
 
   // These rotate automatically every few seconds.
   wishes: [
@@ -85,6 +85,12 @@ window.BIRTHDAY_CONFIG = {
   // bet if this ever gets served over a real web server.
   music: "assets/music/beta.mpeg",
   musicVolume: 0.35,
+
+  // The letter's own song. Starts when "Open the letter" is pressed on page 3,
+  // and the background song above steps aside for it. It loops, so it carries
+  // on for as long as the letter is being read. Set to null to leave it out.
+  letterMusic: "assets/music/lallyaa.mp3",
+  letterMusicVolume: 0.55,
 
 
   /* ── Page 2 — Memory gallery ────────────────────────────────────────── */

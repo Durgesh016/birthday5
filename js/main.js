@@ -664,10 +664,11 @@
     var audio = $("#bgMusic");
     var btn = $("#musicToggle");
     var ready = false, wanted = false, ducked = false, silent = false;
+    var handedOver = false;   /* another track owns the room — see silence() */
     var baseVol = typeof CFG.musicVolume === "number" ? CFG.musicVolume : 0.35;
 
     if (!audio || !btn || !CFG.music) {
-      return { armAutoplay: function () {}, duck: function () {} };
+      return { armAutoplay: function () {}, duck: function () {}, silence: function () {} };
     }
 
     /* "auto", not "metadata": the song should be buffered and ready to start
@@ -737,6 +738,7 @@
 
     btn.addEventListener("click", function () {
       wanted = true;
+      handedOver = false;   /* asking for the music back overrides the hand-over */
       /* mid-silent-open: the song is running but inaudible, so the first press
          has to bring the sound in rather than read as "pause" */
       if (audio.muted) { unmute(); return; }
@@ -785,20 +787,43 @@
       });
     }
 
-    /* Lower the music while a video is playing, then bring it back. */
-    function duck(on) {
-      if (ducked === on) return;
-      ducked = on;
-      var target = on ? baseVol * 0.16 : baseVol;
+    /* One fade at a time — a duck landing on top of a fade-out would otherwise
+       leave two intervals fighting over the same volume. */
+    var fadeTimer = 0;
+    function fadeTo(target, done) {
+      clearInterval(fadeTimer);
       var from = audio.volume, steps = 14, i = 0;
-      var t = setInterval(function () {
+      fadeTimer = setInterval(function () {
         i++;
         audio.volume = Math.max(0, Math.min(1, from + (target - from) * (i / steps)));
-        if (i >= steps) clearInterval(t);
+        if (i >= steps) { clearInterval(fadeTimer); fadeTimer = 0; if (done) done(); }
       }, 40);
     }
 
-    return { armAutoplay: armAutoplay, duck: duck };
+    /* Lower the music while a video is playing, then bring it back. */
+    function duck(on) {
+      if (handedOver || ducked === on) return;
+      ducked = on;
+      fadeTo(on ? baseVol * 0.16 : baseVol);
+    }
+
+    /* Step aside for another track — the letter's song on page 3. Faded out
+       rather than cut, then stopped and restored to full volume, so the toggle
+       is ready to bring it back from wherever it left off.
+       `handedOver` holds the door shut afterwards: stopping the video that was
+       playing raises a `pause`, and the duck-back it carries would otherwise
+       cancel this very fade and leave the song running at full volume. */
+    function silence() {
+      handedOver = true;
+      ducked = false;
+      if (audio.paused) { audio.volume = baseVol; return; }
+      fadeTo(0, function () {
+        audio.pause();
+        audio.volume = baseVol;
+      });
+    }
+
+    return { armAutoplay: armAutoplay, duck: duck, silence: silence };
   })();
 
   /* ==========================================================================
@@ -1264,6 +1289,7 @@
     var cue = $("#videoCue");
     var skipBtn = $("#skipVideo");
     var reveal = $("#finalReveal");
+    var song = $("#letterMusic");
     var revealed = false;
     var skipTimer = 0;
 
@@ -1332,6 +1358,30 @@
       video.addEventListener("pause", function () { Music.duck(false); });
     }
 
+    /* Buffer the letter's song the moment page 3 opens, so the press that opens
+       the letter is answered with sound rather than with a wait. */
+    function armSong() {
+      if (!song || !CFG.letterMusic || song.getAttribute("src")) return;
+      song.preload = "auto";
+      song.volume = typeof CFG.letterMusicVolume === "number" ? CFG.letterMusicVolume : 0.55;
+      song.src = CFG.letterMusic;
+      song.load();
+    }
+
+    /* The letter's song, started from the press that opens the letter — a real
+       gesture, so the autoplay policy grants it outright. The background song
+       steps aside instead of playing underneath, and a video still running is
+       stopped for the same reason: only one thing should be audible here. */
+    function playSong() {
+      if (!song || !CFG.letterMusic) return;
+      armSong();
+      Music.silence();
+      if (video && !video.paused) { try { video.pause(); } catch (e) {} }
+      try { song.currentTime = 0; } catch (e) { /* not seekable yet */ }
+      var p = song.play();
+      if (p && p.catch) p.catch(function () { /* nothing to do but stay quiet */ });
+    }
+
     function fallback(message) {
       if (frame) frame.hidden = true;
       if (cue) cue.textContent = message;
@@ -1376,6 +1426,7 @@
     }
 
     function onEnter() {
+      armSong();
       if (revealed) return;
       if (CFG.skipAfterSeconds && skipBtn && skipBtn.hidden) {
         clearTimeout(skipTimer);
@@ -1388,7 +1439,9 @@
     function init() {
       buildLetter();
       setupVideo();
-      if (skipBtn) skipBtn.addEventListener("click", doReveal);
+      if (skipBtn) {
+        skipBtn.addEventListener("click", function () { playSong(); doReveal(); });
+      }
 
       var again = $("#celebrateBtn");
       if (again) {
@@ -1404,6 +1457,8 @@
 
     return { init: init, onEnter: onEnter, pause: function () {
       if (video && !video.paused) { try { video.pause(); } catch (e) {} }
+      /* the letter's song belongs to page 3 — it doesn't follow you back */
+      if (song && !song.paused) { try { song.pause(); } catch (e) {} }
     } };
   })();
 

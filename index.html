@@ -360,8 +360,26 @@
   </div>
 
   <audio id="bgMusic" loop preload="none"></audio>
+  <!-- The letter's own song, started by the "Open the letter" press on page 3. -->
+  <audio id="letterMusic" loop preload="none"></audio>
 
   <script src="js/media.js" charset="utf-8"></script>
   <script src="js/main.js" charset="utf-8"></script>
+
+  <!-- Nudge shown once when page 1 opens, so the surprise on page 2 isn't missed. -->
+  <script>
+    (function () {
+      function nudge() {
+        setTimeout(function () {
+          alert("Next page is waiting for U , please scroll down");
+        }, 900);
+      }
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", nudge);
+      } else {
+        nudge();
+      }
+    })();
+  </script>
 </body>
 </html>
