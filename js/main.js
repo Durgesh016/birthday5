@@ -599,6 +599,53 @@
     box.appendChild(frag);
   }
 
+  /* ---- Falling hearts, chapter two -------------------------------------
+     Rebuilt from scratch each time the chapter opens rather than seeded once,
+     so the fall is never the same twice — that is the whole point of it. The
+     negative delays mean the sky is already full on arrival instead of the
+     first heart having to travel down an empty screen.
+     Same cedar/sage/wheat fills as page 3: an emoji heart is locked to its own
+     red and would be the one loud thing on a quiet palette. */
+  function buildFallingHearts() {
+    var box = $("#fallingHearts");
+    if (!box || REDUCED || CFG.heartParticles === false) return;
+    var FILLS = ["url(#gCedar)", "url(#gSage)", "url(#gSage)", "url(#gWheat)"];
+    /* They fall behind the tiles, over a photograph that is already busy, so
+       they have to be a size and a weight that survives that — smaller and
+       fainter and they read as dust on the lens rather than as hearts. */
+    var n = window.innerWidth < 700 ? 14 : 24;
+    var frag = document.createDocumentFragment();
+
+    for (var i = 0; i < n; i++) {
+      var h = el("span", "fheart");
+      h.style.setProperty("--x", rand(1, 99).toFixed(1) + "%");
+      h.style.setProperty("--sz", rand(15, 36).toFixed(0) + "px");
+      h.style.setProperty("--op", rand(.5, .95).toFixed(2));
+      h.style.setProperty("--dur", rand(11, 24).toFixed(1) + "s");
+      h.style.setProperty("--delay", (-rand(0, 24)).toFixed(1) + "s");
+
+      var sway = el("span", "fheart__sway");
+      sway.style.setProperty("--sway", rand(9, 46).toFixed(0) + "px");
+      sway.style.setProperty("--swayDur", rand(3.2, 7).toFixed(1) + "s");
+      sway.style.setProperty("--swayDelay", (-rand(0, 6)).toFixed(1) + "s");
+
+      var spin = el("span", "fheart__spin");
+      spin.style.setProperty("--r0", rand(-42, -6).toFixed(0) + "deg");
+      spin.style.setProperty("--r1", rand(6, 42).toFixed(0) + "deg");
+      spin.style.setProperty("--spinDur", rand(3.8, 9).toFixed(1) + "s");
+      spin.style.setProperty("--spinDelay", (-rand(0, 8)).toFixed(1) + "s");
+      spin.innerHTML = '<svg viewBox="-28 -28 56 56"><use href="#art-heart" fill="' +
+                       pick(FILLS) + '"/></svg>';
+
+      sway.appendChild(spin);
+      h.appendChild(sway);
+      frag.appendChild(h);
+    }
+
+    box.innerHTML = "";
+    box.appendChild(frag);
+  }
+
   var heartsBuilt = false;
   function buildHearts() {
     var box = $("#hearts");
@@ -832,26 +879,53 @@
   var Router = (function () {
     var pages = $$(".page");
     var veil = $("#veil");
-    var dotsBox = $("#dots");
+    var navBox = $("#pageNav");
     var current = 0;
     var busy = false;
     var LABELS = ["Welcome", "Memories", "Surprise"];
     var onEnter = {};
 
+    /* One named step per page, rather than the row of dots this used to be:
+       a dot the size of a full stop is a hard thing to hit with a thumb and
+       tells you nothing about where it goes. Each step carries its number and
+       its name, and the stylesheet holds it to a 52px target. */
     pages.forEach(function (p, i) {
-      var d = el("button", "dots__dot");
-      d.type = "button";
-      d.dataset.label = LABELS[i] || ("Page " + (i + 1));
-      d.setAttribute("aria-label", "Go to " + (LABELS[i] || ("page " + (i + 1))));
-      d.addEventListener("click", function () { go(i); });
-      dotsBox.appendChild(d);
+      var label = LABELS[i] || ("Page " + (i + 1));
+      var b = el("button", "pagenav__step");
+      b.type = "button";
+      b.appendChild(el("span", "pagenav__num", String(i + 1)));
+      b.appendChild(el("span", "pagenav__label", label));
+      b.setAttribute("aria-label", "Go to " + label);
+      b.addEventListener("click", function () {
+        /* The confetti that used to fire off the Next buttons lives here now
+           that the bar is the only way through. Forward moves only, which is
+           exactly what those buttons did — a burst for stepping back would
+           read as a reward for undoing something. */
+        if (!REDUCED && i > current) {
+          var r = b.getBoundingClientRect();
+          /* colour the burst for where it's going — the particles outlive the
+             transition, so matching the destination avoids a palette clash */
+          Confetti.setPalette("earth");
+          Confetti.burst({
+            count: 60, power: 15, spread: Math.PI * 1.05, angle: -Math.PI / 2,
+            x: (r.left + r.width / 2) / window.innerWidth,
+            y: (r.top + r.height / 2) / window.innerHeight
+          });
+        }
+        go(i);
+      });
+      if (navBox) navBox.appendChild(b);
     });
-    var dots = $$(".dots__dot", dotsBox);
+    var steps = navBox ? $$(".pagenav__step", navBox) : [];
 
-    function paintDots() {
-      dots.forEach(function (d, i) {
-        d.classList.toggle("is-active", i === current);
-        d.setAttribute("aria-current", i === current ? "true" : "false");
+    function paintSteps() {
+      steps.forEach(function (b, i) {
+        var on = i === current;
+        b.classList.toggle("is-active", on);
+        /* aria-current is dropped rather than set to "false" — the attribute's
+           presence is the signal, and every step claiming a value is noise */
+        if (on) { b.setAttribute("aria-current", "step"); }
+        else { b.removeAttribute("aria-current"); }
       });
     }
 
@@ -875,7 +949,7 @@
       to.removeAttribute("aria-hidden");
 
       current = next;
-      paintDots();
+      paintSteps();
       paintTheme();
       runTimedReveals(to);
       observeReveals(to);
@@ -903,6 +977,10 @@
     }
 
     paintTheme();   /* page 1's palette, set before the first paint */
+    /* ...and page 1's step. The dots this replaced were only ever painted
+       inside swap(), so on arrival none of them was marked as the page you
+       were on until you moved off it. */
+    paintSteps();
 
     return {
       go: go,
@@ -911,24 +989,6 @@
       pages: pages
     };
   })();
-
-  $$("[data-goto]").forEach(function (btn) {
-    btn.addEventListener("click", function () {
-      var target = parseInt(btn.dataset.goto, 10) - 1;
-      if (!REDUCED) {
-        var r = btn.getBoundingClientRect();
-        /* colour the burst for where it's going — the particles outlive the
-           transition, so matching the destination avoids a palette clash */
-        Confetti.setPalette("earth");
-        Confetti.burst({
-          count: 60, power: 15, spread: Math.PI * 1.05, angle: -Math.PI / 2,
-          x: (r.left + r.width / 2) / window.innerWidth,
-          y: (r.top + r.height / 2) / window.innerHeight
-        });
-      }
-      Router.go(target);
-    });
-  });
 
   /* ==========================================================================
      6. PAGE 1 — heading + rotating wishes
@@ -1004,12 +1064,16 @@
     function tick() { show((i + 1) % list.length); }
 
     var every = Math.max(2000, CFG.wishInterval || 4200);
-    function run() { timer = setInterval(function () { if (!document.hidden) tick(); }, every); }
+    function run() { clearInterval(timer); timer = setInterval(tick, every); }
     setTimeout(run, 1800);
 
+    /* Stop while the tab is in the background, start again when it comes back.
+       The old version only restarted if page 1 happened to be the one on
+       screen, so switching tabs from anywhere else killed the rotation for the
+       rest of the visit — including after coming back to page 1. */
     document.addEventListener("visibilitychange", function () {
-      if (document.hidden) { clearInterval(timer); }
-      else if (Router.index() === 0) { clearInterval(timer); run(); }
+      if (document.hidden) { clearInterval(timer); timer = 0; }
+      else { run(); }
     });
   }
 
@@ -1157,6 +1221,10 @@
     var prevBtn = $("#lbPrev");
     var nextBtn = $("#lbNext");
     var index = 0, opener = null, isOpen = false;
+    /* the page behind is frozen while the dialog is up (see .is-locked in the
+       CSS); a container that stops scrolling can lose its offset, so it is
+       noted on the way in and put back on the way out */
+    var lockedPage = null, lockedTop = 0;
 
     function clear() {
       var v = mediaBox.querySelector("video");
@@ -1218,6 +1286,8 @@
       isOpen = true;
       box.hidden = false;
       Gallery.pausePreviews();        /* nothing playing behind the dialog */
+      lockedPage = $(".page.is-active");
+      lockedTop = lockedPage ? lockedPage.scrollTop : 0;
       document.body.classList.add("is-locked");
       render(i);
       requestAnimationFrame(function () {
@@ -1236,6 +1306,7 @@
         clear();
         box.hidden = true;
         document.body.classList.remove("is-locked");
+        if (lockedPage) { lockedPage.scrollTop = lockedTop; lockedPage = null; }
         if (opener) { try { opener.focus({ preventScroll: true }); } catch (e) {} }
       }, REDUCED ? 0 : 420);
     }
@@ -1473,6 +1544,7 @@
     buildGarden();
     buildPetals();
     buildHeroHearts();
+    buildFallingHearts();
     buildBalloons();
     buildHeroPhoto();
     buildGalleryPhoto();
@@ -1500,6 +1572,8 @@
       Confetti.stopSprinkle();
       Final.pause();
       Gallery.playPreviews(true);
+      /* a fresh fall for every visit — see buildFallingHearts */
+      buildFallingHearts();
     });
     Router.onEnter(2, function () {
       Confetti.setPalette("earth");

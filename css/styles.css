@@ -109,6 +109,12 @@
   --font-letter:"Cormorant Garamond",Georgia,serif;
 
   --shell:min(1180px,92vw);
+
+  /* How much room the chapter bar needs at the foot of every page: its own
+     height (34px step + 3px padding either side, plus the 5px cuff), the gap
+     it keeps from the bottom edge, and whatever the hardware reserves below
+     that. Pages add it to their bottom padding so nothing ends up under it. */
+  --nav-clear:calc(60px + env(safe-area-inset-bottom,0px));
 }
 
 /* Pages 2 and 3: cedar bark + sage green. The router stamps data-page on
@@ -154,6 +160,9 @@ body[data-page="3"]{
 html{ -webkit-text-size-adjust:100%; }
 
 body{
+  /* svh first appeared in Safari 15.4 / Chrome 108 — anything older ignores
+     the whole declaration, so the plain vh has to come first as the floor. */
+  min-height:100vh;
   min-height:100svh;
   font-family:var(--font-body);
   font-weight:300;
@@ -305,9 +314,9 @@ body[data-page="3"] .bg__photo--final.is-ready{opacity:1}
      them. Thinnest in the middle, where the picture sits behind the grid. */
   background:
     linear-gradient(180deg,
-      rgba(248,242,234,.86) 0%, rgba(246,240,231,.66) 26%,
-      rgba(244,241,230,.6) 70%, rgba(247,244,236,.86) 100%),
-    radial-gradient(122% 98% at 50% 45%, transparent 52%, rgba(78,72,50,.18) 100%);
+      rgba(150, 113, 78, 0.76) 0%, rgba(246,240,231,.66) 26%,
+      rgba(32, 31, 27, 0.6) 70%, rgba(32, 28, 17, 0.86) 100%),
+    radial-gradient(50% 50% at 10% 15%, transparent 10%, rgba(78,72,50,.18) 100%);
 }
 
 /* Page 3 sits a step further back than page 2: the letter is there to be read,
@@ -374,9 +383,15 @@ body[data-page="3"] .bg__photo--final.is-ready{opacity:1}
   100%{transform:translate3d(125%,0,0) skewX(-8deg)}
 }
 
-/* ---------- 5. Fixed chrome: music + dots ---------- */
+/* ---------- 5. Fixed chrome: music + chapter bar ----------
+   The viewport meta says `viewport-fit=cover`, so the page runs edge to edge
+   and under the hardware — everything pinned to an edge has to add the safe
+   area back or it lands beneath a notch, a rounded corner or a home bar.
+   env() is ignored where it isn't supported, hence the 0px fallbacks. */
 .music-toggle{
-  position:fixed;top:clamp(14px,2.4vw,26px);left:clamp(14px,2.4vw,26px);z-index:80;
+  position:fixed;z-index:80;
+  top:calc(clamp(14px,2.4vw,26px) + env(safe-area-inset-top,0px));
+  left:calc(clamp(14px,2.4vw,26px) + env(safe-area-inset-left,0px));
   display:flex;align-items:center;gap:10px;
   padding:10px 16px 10px 12px;border-radius:99px;
   background:var(--glass-strong);border:1px solid var(--glass-brd);
@@ -425,7 +440,15 @@ body[data-page="3"] .bg__photo--final.is-ready{opacity:1}
   font-family:var(--font-body);font-size:.66rem;font-weight:500;
   letter-spacing:.12em;text-transform:uppercase;
   color:var(--ink-soft);white-space:nowrap;
+  transition:opacity .5s var(--ease-out),transform .5s var(--ease-out),visibility .5s;
 }
+/* Once the song is audible the nudge has done its job — it used to sit there
+   pointing at a button the visitor had already pressed, on every page. */
+.music-toggle[aria-pressed="true"] .music-hint{
+  opacity:0;transform:translateY(-50%) translateX(-8px);
+  pointer-events:none;visibility:hidden;
+}
+
 .music-hint__arrow{
   width:14px;height:14px;flex:none;
   fill:none;stroke:var(--a-mid);stroke-width:2.2;
@@ -434,30 +457,89 @@ body[data-page="3"] .bg__photo--final.is-ready{opacity:1}
 }
 @keyframes hintNudge{0%,100%{transform:translateX(0)}50%{transform:translateX(-4px)}}
 
-.dots{
-  position:fixed;top:50%;right:clamp(10px,2vw,22px);z-index:80;
-  transform:translateY(-50%);
-  display:flex;flex-direction:column;gap:14px;align-items:center;
+/* ---------- Chapter bar ----------
+   A named step per chapter, sitting where a thumb already rests, in place of
+   the rail of 11px dots this started as. Pared back again: the pill is 34px
+   tall now, but what you can press is still 44px — see the invisible cuff on
+   .pagenav__step, which grows the target up and down without growing the
+   thing you can see.
+   max-width is a guard against the bar running off a narrow screen, so it has
+   to stay wider than the bar's own content — the labels do not wrap, and a
+   max-width below what they need makes the pill spill instead of shrink. */
+.pagenav{
+  position:fixed;z-index:80;
+  left:50%;bottom:calc(clamp(10px,1.6vh,15px) + env(safe-area-inset-bottom,0px));
+  transform:translateX(-50%);
+  display:flex;align-items:stretch;gap:4px;
+  padding:3px;border-radius:99px;
+  max-width:calc(100vw - 20px);
+  background:var(--glass-strong);
+  border:1px solid var(--glass-brd);
+/*   -webkit-backdrop-filter:blur(18px) saturate(1.5);backdrop-filter:blur(18px) saturate(1.5); */
+  box-shadow:0 18px 44px -18px rgba(var(--shadow-rgb),.55),
+             0 0 0 1px rgba(255,255,255,.28) inset;
 }
-.dots__dot{
-  position:relative;width:11px;height:11px;border-radius:50%;
-  background:rgba(255,255,255,.7);border:1px solid rgba(160,120,190,.35);
-  box-shadow:0 2px 6px -2px rgba(92,63,168,.4);
-  transition:all .45s var(--ease-out);
+
+.pagenav__step{
+  position:relative;
+  display:flex;align-items:center;gap:5px;
+  min-height:34px;min-width:34px;
+  padding:0 10px 0 6px;
+  border-radius:99px;
+  color:var(--ink-soft);
+  white-space:nowrap;
+  transition:color .45s var(--ease-out),background .45s var(--ease-out),
+             transform .45s var(--ease-out);
 }
-.dots__dot::after{
-  content:attr(data-label);
-  position:absolute;right:22px;top:50%;transform:translate(6px,-50%);
-  font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;
-  color:var(--ink-soft);white-space:nowrap;
-  opacity:0;pointer-events:none;transition:all .35s var(--ease-out);
+/* The invisible cuff. A pseudo-element belongs to the button that owns it, so
+   a press inside this area counts as a press on the step — which buys back the
+   44px of height the pill gave up, without a pixel of it being visible. It
+   reaches up and down only: widening it sideways would push the neighbouring
+   chapters' targets into each other, which is the thing to avoid. */
+.pagenav__step::after{
+  content:"";position:absolute;z-index:2;
+  left:0;right:0;top:-5px;bottom:-5px;
+  border-radius:inherit;
 }
-.dots__dot:hover{transform:scale(1.25);background:var(--a-soft)}
-.dots__dot:hover::after{opacity:1;transform:translate(0,-50%)}
-.dots__dot.is-active{
-  height:30px;border-radius:99px;
-  background:linear-gradient(var(--a-mid),var(--b-mid));
-  border-color:transparent;
+/* The fill is a separate layer so it can cross-fade under the label instead of
+   snapping, which a background shorthand on the button itself cannot do. */
+.pagenav__step::before{
+  content:"";position:absolute;inset:0;z-index:0;border-radius:inherit;
+  background:var(--accent-grad);background-size:220% 220%;
+  opacity:0;transform:scale(.86);
+  transition:opacity .45s var(--ease-out),transform .45s var(--ease-out);
+}
+.pagenav__num{
+  position:relative;z-index:1;
+  display:grid;place-items:center;flex:none;
+  width:19px;height:19px;border-radius:50%;
+  font-size:.58rem;font-weight:500;font-variant-numeric:tabular-nums;
+  color:var(--ink-soft);
+  background:rgba(255,255,255,.6);
+  border:1px solid rgba(var(--shadow-rgb),.12);
+  transition:color .45s var(--ease-out),background .45s var(--ease-out),
+             border-color .45s var(--ease-out);
+}
+/* .52rem is about as far down as uppercase tracked type goes and still reads
+   at arm's length; .3rem lands at roughly 4.8px, which is a texture, not a
+   word. The weight stays at 400 — light type reads smaller than bold type of
+   the same size, so it buys the look without costing legibility. */
+.pagenav__label{
+  position:relative;z-index:1;
+  font-size:.52rem;font-weight:400;
+  letter-spacing:.08em;text-transform:uppercase;
+}
+
+.pagenav__step:hover{color:var(--ink);background:rgba(255,255,255,.5)}
+.pagenav__step:active{transform:scale(.97)}
+
+.pagenav__step.is-active{color:#fff}
+.pagenav__step.is-active::before{opacity:1;transform:none;animation:btnHue 9s ease infinite}
+.pagenav__step.is-active:hover{background:none}
+.pagenav__step.is-active .pagenav__num{
+  color:#fff;
+  background:rgba(255,255,255,.24);
+  border-color:rgba(255,255,255,.5);
 }
 
 /* ---------- 6. Page shell & transitions ---------- */
@@ -483,6 +565,8 @@ body[data-page="3"] .bg__photo--final.is-ready{opacity:1}
   width:var(--shell);margin-inline:auto;
   min-height:100%;
   padding-block:clamp(56px,9vh,96px);
+  /* the chapter bar sits over the foot of every page now, not beside it */
+  padding-bottom:calc(clamp(30px,5vh,54px) + var(--nav-clear));
   display:flex;flex-direction:column;
 }
 
@@ -655,9 +739,13 @@ body[data-page="3"] .bg__photo--final.is-ready{opacity:1}
 }
 
 /* Rotating wishes */
+/* min-height, not height: on a narrow phone the longer wishes run to four or
+   five lines, and a hard height let them spill out of the box and land on the
+   name above and the pips below. The floor is high enough that the box never
+   resizes on a laptop, where a wish is one or two lines. */
 .wishes{
   position:relative;
-  width:min(780px,92vw);height:clamp(96px,15vh,124px);
+  width:min(780px,92vw);min-height:clamp(96px,15vh,124px);
   display:grid;place-items:center;
 }
 .wishes__text{
@@ -1465,7 +1553,12 @@ body[data-page="3"] .bg__photo--final.is-ready{opacity:1}
 .lightbox__nav--prev{left:clamp(10px,2.4vw,30px)}
 .lightbox__nav--next{right:clamp(10px,2.4vw,30px)}
 
+/* The pages are their own scroll containers, so hiding the body's overflow
+   does nothing to them — without this, dragging on the backdrop scrolled the
+   gallery around behind the open photo. The scroll position is put back by
+   the lightbox on close. */
 body.is-locked{overflow:hidden}
+body.is-locked .page{overflow:hidden}
 
 /* ============================================================
    PAGE 3 — Final surprise
@@ -1473,7 +1566,8 @@ body.is-locked{overflow:hidden}
 .final{align-items:center;text-align:center}
 
 .final__stage{
-  min-height:calc(100svh - 2 * clamp(56px,9vh,96px));
+  min-height:calc(100vh - clamp(56px,9vh,96px) - clamp(30px,5vh,54px) - var(--nav-clear));
+  min-height:calc(100svh - clamp(56px,9vh,96px) - clamp(30px,5vh,54px) - var(--nav-clear));
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   width:100%;
   transition:min-height .9s var(--ease-out);
@@ -1508,9 +1602,19 @@ body.is-locked{overflow:hidden}
   overflow:hidden;line-height:0;
   background:var(--media-bg);
 }
+/* The video keeps its own shape. A forced 16:9 with `cover` cropped a phone
+   video — which is portrait — down to a letterbox slot through its middle,
+   taking the head off the top and the feet off the bottom. `height:auto` lets
+   the file's real ratio drive the box (the poster holds the space until the
+   metadata lands), the cap stops a tall one running past the fold, and
+   `contain` letterboxes rather than crops if the cap does bite. */
 .video-frame video{
-  width:100%;aspect-ratio:16/9;object-fit:cover;
+  width:100%;height:auto;object-fit:contain;
+  max-height:min(68vh,640px);
   background:var(--media-bg);
+}
+@supports (height:100svh){
+  .video-frame video{max-height:min(68svh,640px)}
 }
 .video-frame__glow{
   position:absolute;inset:-24px;z-index:-1;border-radius:inherit;
@@ -1541,11 +1645,19 @@ body.is-locked{overflow:hidden}
   content:"";position:absolute;inset:14px;border-radius:calc(var(--r-xl) - 12px);
   border:1px solid var(--frame-line);pointer-events:none;
 }
-/* .letter::after{ /* top light sweep */
-  content:"";position:absolute;top:-60%;left:-30%;width:80%;height:160%;
-  background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);
-  transform:rotate(12deg);pointer-events:none;
-} */
+/* The top light sweep is switched off — it read as a smudge over the text.
+   Kept here inside ONE comment. It used to be disabled by opening a second
+   comment on the same line, but CSS comments do not nest: that inner opener
+   closed the whole thing early, and the declarations below leaked back into
+   the stylesheet as a malformed rule which then swallowed the .letter__corner
+   rule with it — the letter lost its gold corner rules.
+
+   .letter::after{
+     content:"";position:absolute;top:-60%;left:-30%;width:80%;height:160%;
+     background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);
+     transform:rotate(12deg);pointer-events:none;
+   }
+*/
 .letter__corner{
   position:absolute;width:64px;height:64px;pointer-events:none;opacity:.6;
   background:
@@ -1637,6 +1749,54 @@ body.is-locked{overflow:hidden}
 }
 .final__credit{font-size:.78rem;letter-spacing:.1em;color:var(--ink-faint)}
 
+/* ---------- Falling hearts (chapter two) ----------
+   Three nested elements per heart, the same build as the petals on page 1: the
+   outer one falls, the middle one sways across, the inner one tumbles. Stacking
+   them is what stops the motion reading as a straight line — one animation
+   doing all three would need every heart to share a rhythm.
+   Sizes, speeds, drifts and delays all come from JS, so no two hearts fall
+   alike and no two visits look the same. */
+.hearts-fall{
+  position:absolute;inset:0;pointer-events:none;overflow:hidden;
+  opacity:0;transition:opacity 1.1s var(--ease-out);
+}
+body[data-page="2"] .hearts-fall{opacity:1}
+/* off-chapter there is nothing to see, so stop paying for the animation */
+body:not([data-page="2"]) .fheart,
+body:not([data-page="2"]) .fheart *{animation-play-state:paused}
+
+.fheart{
+  position:absolute;top:0;left:var(--x,50%);
+  width:var(--sz,22px);height:var(--sz,22px);
+  margin-left:calc(var(--sz,22px) / -2);
+  opacity:var(--op,.8);
+  filter:drop-shadow(0 8px 16px rgba(var(--shadow-rgb),.3));
+  animation:heartFall var(--dur,16s) linear var(--delay,0s) infinite;
+  will-change:transform;
+}
+.fheart__sway,.fheart__spin{display:block;width:100%;height:100%}
+.fheart__sway{
+  animation:heartDrift var(--swayDur,5s) ease-in-out var(--swayDelay,0s) infinite alternate;
+}
+.fheart__spin{
+  animation:heartTumble var(--spinDur,7s) ease-in-out var(--spinDelay,0s) infinite alternate;
+}
+.fheart svg{width:100%;height:100%;display:block;stroke:none;overflow:visible}
+
+/* starts and ends clear of the screen, so nothing pops in or out at an edge */
+@keyframes heartFall{
+  from{transform:translate3d(0,-16vh,0)}
+  to  {transform:translate3d(0,114vh,0)}
+}
+@keyframes heartDrift{
+  from{transform:translateX(calc(var(--sway,26px) * -1))}
+  to  {transform:translateX(var(--sway,26px))}
+}
+@keyframes heartTumble{
+  from{transform:rotate(var(--r0,-16deg)) scale(.9)}
+  to  {transform:rotate(var(--r1,18deg)) scale(1.06)}
+}
+
 /* Floating hearts */
 .hearts{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden}
 .heart{
@@ -1652,24 +1812,42 @@ body.is-locked{overflow:hidden}
   100%{opacity:0;transform:translate3d(0,-112vh,0) scale(.7) rotate(-6deg)}
 }
 
+/* ---------- 8b. Old-browser floor ----------
+   Every tile in the gallery and every polaroid gets its height from
+   aspect-ratio, and their contents are absolutely positioned — so on a browser
+   without it (Safari 14 and older, older Android WebViews) they collapse to
+   nothing and the gallery renders as an empty page. A padding spacer gives
+   them their height back; the pseudo-elements are unused elsewhere on these
+   two, and the whole block is invisible to browsers that don't need it. */
+@supports not (aspect-ratio:1/1){
+  .card::after{content:"";display:block;padding-top:125%}      /* 4:5 */
+  .polaroid__img::after{content:"";display:block;padding-top:100%}
+  .polaroid__img img{position:absolute;inset:0}
+  .hero-art__halo{padding-top:118%;height:0}
+  @media (max-width:680px){ .card::after{padding-top:100%} }   /* 1:1 */
+}
+
 /* ---------- 9. Loading state ---------- */
 body.is-loading .page.is-active{opacity:0}
 
 /* ---------- 10. Responsive ---------- */
 @media (max-width:900px){
-  .dots{
-    top:auto;right:auto;bottom:14px;left:50%;
-    transform:translateX(-50%);flex-direction:row;
-    /* it sits over whatever the fold lands on, so give it its own surface */
-    padding:9px 15px;border-radius:99px;
-    background:rgba(255,255,255,.6);
-    border:1px solid rgba(255,255,255,.7);
-    -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
-    box-shadow:0 8px 22px -10px rgba(92,63,168,.4);
-  }
-  .dots__dot::after{display:none}
-  .dots__dot.is-active{height:11px;width:30px}
-  .page__inner{padding-bottom:clamp(78px,12vh,110px)}
+  .pagenav__step{padding:0 9px 0 5px;gap:4px}
+}
+
+/* Phones drop the numerals. They would still fit at this size — the numbered
+   bar needs only about 260px now — but they are the decorative half of the
+   step: the word is what tells you where you are going, the digit only tells
+   you what order it comes in. Losing them takes about 45px off the width,
+   which is the whole point on a screen this narrow. */
+@media (max-width:480px){
+  .pagenav__num{display:none}
+  .pagenav__step{padding:0 9px;min-width:46px;justify-content:center}
+}
+@media (max-width:330px){
+  .pagenav{gap:3px;padding:3px}
+  .pagenav__step{padding:0 7px;min-width:42px}
+  .pagenav__label{font-size:.5rem;letter-spacing:.04em}
 }
 
 @media (max-width:680px){
@@ -1702,12 +1880,45 @@ body.is-loading .page.is-active{opacity:0}
   .polaroids{grid-template-columns:repeat(2,1fr);gap:14px}
   .polaroid{padding:9px 9px 38px}
   .polaroid__cap{bottom:11px;font-size:1rem}
-  .btn{padding:14px 26px;font-size:.100rem}
+  .btn{padding:14px 26px;font-size:.95rem}
 }
 
 @media (max-width:400px){
   .polaroids{grid-template-columns:1fr}
-  .wishes{height:clamp(120px,20vh,150px)}
+  .wishes{min-height:clamp(120px,20vh,150px)}
+}
+
+/* ---------- Touch screens ----------
+   A tap leaves :hover latched on the thing that was tapped until something
+   else is tapped, so on a phone the lifted-and-enlarged hover state stuck to
+   whichever tile was opened last — and on the video tile it also cancelled the
+   halo for good, since its hover rule sets animation:none. These put the
+   resting look back where there is no real pointer; :active still answers the
+   press, and equal-specificity-but-later is what makes them win. */
+@media (hover:none){
+  .card:hover{transform:none;box-shadow:var(--shadow-md)}
+  .card.is-in:hover{transform:none}
+  .card:hover .card__media img,.card:hover .card__media video{transform:none}
+  .card:hover .card__play i{transform:scale(.9)}
+  .card--video.is-in:hover{
+    transform:scale(var(--vid-scale));
+    animation:videoHalo 4.8s var(--ease-soft) infinite;
+    box-shadow:var(--shadow-lg),0 0 46px -10px rgba(217,185,138,.75);
+  }
+  .card--video:hover .card__play i{
+    transform:scale(.94);
+    animation:playBeat 2.6s var(--ease-soft) infinite;
+    background:linear-gradient(150deg,#fffaf2,#f5e8cb 55%,#e0c390);
+  }
+  .polaroid:hover{transform:rotate(var(--rot,0deg));box-shadow:var(--shadow-md)}
+  .polaroid:hover .polaroid__img img{transform:none}
+  .btn--primary:hover,.btn--ghost:hover{transform:none}
+  .btn--primary:active{transform:scale(.98)}
+  .music-toggle:hover{transform:none;box-shadow:var(--shadow-sm)}
+  /* a tapped step would otherwise keep the hover tint and read as selected
+     alongside the chapter you actually landed on */
+  .pagenav__step:hover{background:none;color:var(--ink-soft)}
+  .pagenav__step.is-active:hover{color:#fff}
 }
 
 /* Short landscape screens */
@@ -1745,7 +1956,7 @@ body.is-loading .page.is-active{opacity:0}
 
 /* ---------- 12. Print ---------- */
 @media print{
-  .bg,.confetti-canvas,.sparkle-field,.veil,.music-toggle,.dots,
+  .bg,.confetti-canvas,.sparkle-field,.veil,.music-toggle,.pagenav,
   .balloons,.hearts,.btn,.lightbox{display:none !important}
   body{overflow:visible;background:#fff}
   .stage,.page{position:static;opacity:1;visibility:visible;transform:none;overflow:visible}

@@ -46,6 +46,11 @@
       <div class="bg__photo-scrim"></div>
     </div>
     <div class="bg__grain"></div>
+    <!-- Hearts falling through chapter two. They live in the fixed backdrop
+         rather than inside the page so they keep falling while the gallery
+         scrolls, instead of scrolling away with it; the stylesheet fades them
+         in on page 2 alone, and js/main.js re-seeds them on every visit. -->
+    <div class="hearts-fall" id="fallingHearts"></div>
   </div>
 
   <!-- ══════════ Floral artwork (drawn once, re-used everywhere) ══════════ -->
@@ -195,7 +200,9 @@
     </span>
   </button>
 
-  <nav class="dots" id="dots" aria-label="Page navigation"></nav>
+  <!-- Chapter bar. Filled in by the router so the steps always match the
+       pages that actually exist. -->
+  <nav class="pagenav" id="pageNav" aria-label="Page navigation"></nav>
 
   <!-- ══════════ PAGE 1 — Welcome & Birthday Surprise ══════════ -->
   <main class="stage" id="stage">
@@ -244,15 +251,10 @@
 
         <div class="wishes__pips" id="wishPips" aria-hidden="true"></div>
 
+        <!-- The chapter bar at the foot of the screen carries the navigation
+             now, so there is no Next button here — the line below points at it. -->
         <div class="welcome__foot">
-          <button class="btn btn--primary reveal" data-delay="2000" type="button" data-goto="2">
-            <span class="btn__label">Next</span>
-            <span class="btn__arrow" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><path d="M5 12h13m0 0-5.5-5.5M18 12l-5.5 5.5"/></svg>
-            </span>
-            <span class="btn__shine" aria-hidden="true"></span>
-          </button>
-          <p class="welcome__hint reveal" data-delay="2200">Our memories are waiting on the next page</p>
+          <p class="welcome__hint reveal" data-delay="2000">Our memories are waiting on the next page</p>
         </div>
        </div>
 
@@ -286,13 +288,6 @@
         </video>
  -->
         <div class="gallery__foot">
-          <button class="btn btn--primary" type="button" data-goto="3">
-            <span class="btn__label">Next</span>
-            <span class="btn__arrow" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><path d="M5 12h13m0 0-5.5-5.5M18 12l-5.5 5.5"/></svg>
-            </span>
-            <span class="btn__shine" aria-hidden="true"></span>
-          </button>
           <p class="gallery__hint">One last surprise is waiting…</p>
         </div>
       </div>
@@ -308,9 +303,12 @@
           <p class="final__cue" id="videoCue">Press play — this one is just for you 💌</p>
           <div class="video-frame" id="videoFrame">
             <div class="video-frame__inner">
-              <video id="finalVideo" playsinline preload="metadata" controls controlsList="nodownload noplaybackrate">
-                <source src="assets/videos/thanmayee1.mp4" type="video/mp4">
-              </video>
+              <!-- No <source> child: js/media.js supplies the real address, and
+                   the local copy this used to point at is no longer in the repo.
+                   A dead <source> costs a failed request on every visit, and its
+                   failure never reaches the <video>, so the "here's your letter
+                   instead" fallback would not fire if the config were emptied. -->
+              <video id="finalVideo" playsinline preload="metadata" controls controlsList="nodownload noplaybackrate"></video>
             </div>
             <div class="video-frame__glow" aria-hidden="true"></div>
           </div>
@@ -365,21 +363,5 @@
 
   <script src="js/media.js" charset="utf-8"></script>
   <script src="js/main.js" charset="utf-8"></script>
-
-  <!-- Nudge shown once when page 1 opens, so the surprise on page 2 isn't missed. -->
-  <script>
-    (function () {
-      function nudge() {
-        setTimeout(function () {
-          alert("Next page is waiting for U , please scroll down");
-        }, 900);
-      }
-      if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", nudge);
-      } else {
-        nudge();
-      }
-    })();
-  </script>
 </body>
 </html>
