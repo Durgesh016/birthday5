@@ -1585,20 +1585,36 @@
     document.body.classList.remove("is-loading");
 
     var first = $("#page-1");
-    runTimedReveals(first);
     observeReveals(first);
 
-    if (!REDUCED) {
-      /* Kept to the character side and deliberately small: the headline needs
-         a calm left, and the scene already carries plenty of motion. */
-      setTimeout(function () {
-        Confetti.burst({ count: 55, power: 17, x: 0.78, y: 0.4, spread: Math.PI * 1.3 });
-      }, 700);
-      setTimeout(function () {
-        Confetti.burst({ count: 35, power: 15, x: 0.93, y: 0.6, angle: -Math.PI / 1.6, spread: Math.PI * 0.8 });
-      }, 1250);
-      if (!petalsOn) Confetti.sprinkle(700);
+    function openTheScene() {
+      runTimedReveals(first);
+      if (!REDUCED) {
+        /* Kept to the character side and deliberately small: the headline needs
+           a calm left, and the scene already carries plenty of motion. */
+        setTimeout(function () {
+          Confetti.burst({ count: 55, power: 17, x: 0.78, y: 0.4, spread: Math.PI * 1.3 });
+        }, 700);
+        setTimeout(function () {
+          Confetti.burst({ count: 35, power: 15, x: 0.93, y: 0.6, angle: -Math.PI / 1.6, spread: Math.PI * 0.8 });
+        }, 1250);
+        if (!petalsOn) Confetti.sprinkle(700);
+      }
     }
+
+    /* The nudge the page opens with. Two things about where it sits:
+       it waits two frames, because .is-loading only just came off and a
+       dialog raised inside boot() would stand over a page the browser has
+       not painted yet; and the opening — staged reveals, confetti — starts
+       after it closes rather than before, because alert() holds the main
+       thread. Scheduled first, every reveal would come due behind the
+       dialog and land in one heap the moment it was dismissed. */
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        window.alert("Click on Memories");
+        openTheScene();
+      });
+    });
   }
 
   if (document.readyState === "loading") {
