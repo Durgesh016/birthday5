@@ -111,10 +111,10 @@
   --shell:min(1180px,92vw);
 
   /* How much room the chapter bar needs at the foot of every page: its own
-     height (34px step + 3px padding either side, plus the 5px cuff), the gap
+     height (42px step + 4px padding either side, plus the 1px cuff), the gap
      it keeps from the bottom edge, and whatever the hardware reserves below
      that. Pages add it to their bottom padding so nothing ends up under it. */
-  --nav-clear:calc(60px + env(safe-area-inset-bottom,0px));
+  --nav-clear:calc(68px + env(safe-area-inset-bottom,0px));
 }
 
 /* Pages 2 and 3: cedar bark + sage green. The router stamps data-page on
@@ -459,10 +459,9 @@ body[data-page="3"] .bg__photo--final.is-ready{opacity:1}
 
 /* ---------- Chapter bar ----------
    A named step per chapter, sitting where a thumb already rests, in place of
-   the rail of 11px dots this started as. Pared back again: the pill is 34px
-   tall now, but what you can press is still 44px — see the invisible cuff on
-   .pagenav__step, which grows the target up and down without growing the
-   thing you can see.
+   the rail of 11px dots this started as. The pill is 42px tall, so it very
+   nearly carries the 44px press target on its own — the invisible cuff on
+   .pagenav__step only has a pixel of work left to do at each end.
    max-width is a guard against the bar running off a narrow screen, so it has
    to stay wider than the bar's own content — the labels do not wrap, and a
    max-width below what they need makes the pill spill instead of shrink. */
@@ -470,21 +469,21 @@ body[data-page="3"] .bg__photo--final.is-ready{opacity:1}
   position:fixed;z-index:80;
   left:50%;bottom:calc(clamp(10px,1.6vh,15px) + env(safe-area-inset-bottom,0px));
   transform:translateX(-50%);
-  display:flex;align-items:stretch;gap:4px;
-  padding:3px;border-radius:99px;
+  display:flex;align-items:stretch;gap:5px;
+  padding:4px;border-radius:99px;
   max-width:calc(100vw - 20px);
   background:var(--glass-strong);
   border:1px solid var(--glass-brd);
   -webkit-backdrop-filter:blur(18px) saturate(1.5);backdrop-filter:blur(18px) saturate(1.5);
   box-shadow:0 18px 44px -18px rgba(var(--shadow-rgb),.55),
-             0 0 0 1px rgba(72, 97, 51, 0.28) inset;
+             0 0 0 1px rgba(64, 80, 52, 0.28) inset;
 }
 
 .pagenav__step{
   position:relative;
-  display:flex;align-items:center;gap:5px;
-  min-height:34px;min-width:34px;
-  padding:0 10px 0 6px;
+  display:flex;align-items:center;gap:7px;
+  min-height:42px;min-width:42px;
+  padding:0 14px 0 8px;
   border-radius:99px;
   color:var(--ink-soft);
   white-space:nowrap;
@@ -492,13 +491,13 @@ body[data-page="3"] .bg__photo--final.is-ready{opacity:1}
              transform .45s var(--ease-out);
 }
 /* The invisible cuff. A pseudo-element belongs to the button that owns it, so
-   a press inside this area counts as a press on the step — which buys back the
-   44px of height the pill gave up, without a pixel of it being visible. It
-   reaches up and down only: widening it sideways would push the neighbouring
-   chapters' targets into each other, which is the thing to avoid. */
+   a press inside this area counts as a press on the step — which tops the
+   target up to 44px, without a pixel of it being visible. It reaches up and
+   down only: widening it sideways would push the neighbouring chapters'
+   targets into each other, which is the thing to avoid. */
 .pagenav__step::after{
   content:"";position:absolute;z-index:2;
-  left:0;right:0;top:-5px;bottom:-5px;
+  left:0;right:0;top:-1px;bottom:-1px;
   border-radius:inherit;
 }
 /* The fill is a separate layer so it can cross-fade under the label instead of
@@ -512,21 +511,20 @@ body[data-page="3"] .bg__photo--final.is-ready{opacity:1}
 .pagenav__num{
   position:relative;z-index:1;
   display:grid;place-items:center;flex:none;
-  width:19px;height:19px;border-radius:50%;
-  font-size:.58rem;font-weight:500;font-variant-numeric:tabular-nums;
+  width:24px;height:24px;border-radius:50%;
+  font-size:.7rem;font-weight:500;font-variant-numeric:tabular-nums;
   color:var(--ink-soft);
   background:rgba(255,255,255,.6);
   border:1px solid rgba(var(--shadow-rgb),.12);
   transition:color .45s var(--ease-out),background .45s var(--ease-out),
              border-color .45s var(--ease-out);
 }
-/* .52rem is about as far down as uppercase tracked type goes and still reads
-   at arm's length; .3rem lands at roughly 4.8px, which is a texture, not a
-   word. The weight stays at 400 — light type reads smaller than bold type of
-   the same size, so it buys the look without costing legibility. */
+/* .64rem is about 10px, which uppercase tracked type reads comfortably at.
+   The weight stays at 400 — light type reads smaller than bold type of the
+   same size, so it keeps the label quiet next to the numeral. */
 .pagenav__label{
   position:relative;z-index:1;
-  font-size:.52rem;font-weight:400;
+  font-size:.64rem;font-weight:400;
   letter-spacing:.08em;text-transform:uppercase;
 }
 
@@ -1832,22 +1830,21 @@ body.is-loading .page.is-active{opacity:0}
 
 /* ---------- 10. Responsive ---------- */
 @media (max-width:900px){
-  .pagenav__step{padding:0 9px 0 5px;gap:4px}
+  .pagenav__step{padding:0 12px 0 7px;gap:6px}
 }
 
-/* Phones drop the numerals. They would still fit at this size — the numbered
-   bar needs only about 260px now — but they are the decorative half of the
-   step: the word is what tells you where you are going, the digit only tells
-   you what order it comes in. Losing them takes about 45px off the width,
-   which is the whole point on a screen this narrow. */
+/* Phones drop the numerals. They are the decorative half of the step: the word
+   is what tells you where you are going, the digit only tells you what order
+   it comes in. Losing them takes about 90px off the width at this size, which
+   is the whole point on a screen this narrow. */
 @media (max-width:480px){
   .pagenav__num{display:none}
-  .pagenav__step{padding:0 9px;min-width:46px;justify-content:center}
+  .pagenav__step{padding:0 12px;min-width:54px;justify-content:center}
 }
 @media (max-width:330px){
-  .pagenav{gap:3px;padding:3px}
-  .pagenav__step{padding:0 7px;min-width:42px}
-  .pagenav__label{font-size:.5rem;letter-spacing:.04em}
+  .pagenav{gap:4px;padding:3px}
+  .pagenav__step{padding:0 10px;min-width:48px}
+  .pagenav__label{font-size:.58rem;letter-spacing:.04em}
 }
 
 @media (max-width:680px){

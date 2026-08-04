@@ -888,7 +888,7 @@
     /* One named step per page, rather than the row of dots this used to be:
        a dot the size of a full stop is a hard thing to hit with a thumb and
        tells you nothing about where it goes. Each step carries its number and
-       its name, and the stylesheet holds it to a 52px target. */
+       its name, and the stylesheet holds it to a 44px target. */
     pages.forEach(function (p, i) {
       var label = LABELS[i] || ("Page " + (i + 1));
       var b = el("button", "pagenav__step");
